@@ -40,6 +40,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     }
                 });
             }, interval);
+            date = new Date(Date.now())
+            console.log(`${date.toLocaleString('en-US', options)}: no. of tabs being refreshed: ${Object.keys(refreshIntervals).length}`);
         });
 
     } else if (message.action === "stop") {
@@ -64,5 +66,6 @@ chrome.tabs.onRemoved.addListener(function (tabId) {
         delete refreshIntervals[tabId];
         var date = new Date(Date.now())
         console.log(`${date.toLocaleString('en-US', options)}: Stopped auto-refresh for tab with ID: ${tabId}`);
+        console.log(`${date.toLocaleString('en-US', options)}: no. of tabs still being refreshed: ${Object.keys(refreshIntervals).length}`);
     }
 })
