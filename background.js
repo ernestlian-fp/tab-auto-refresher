@@ -51,8 +51,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             delete refreshIntervals[tabId];
             var date = new Date(Date.now())
             console.log(`${date.toLocaleString('en-US', options)}: Stopped auto-refresh for tab with ID: ${tabId}`);
+            console.log(`${date.toLocaleString('en-US', options)}: no. of tabs still being refreshed: ${Object.keys(refreshIntervals).length}`);
         } else {
             console.log(`No active refresh found for tab with ID: ${tabId}`);
         }
     }
 });
+
+chrome.tabs.onRemoved.addListener(function (tabId) {
+    if (refreshIntervals[tabId]) {
+        clearInterval(refreshIntervals[tabId]);
+        delete refreshIntervals[tabId];
+        var date = new Date(Date.now())
+        console.log(`${date.toLocaleString('en-US', options)}: Stopped auto-refresh for tab with ID: ${tabId}`);
+    }
+})
