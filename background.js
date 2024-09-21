@@ -1,4 +1,5 @@
 let refreshIntervals = {}; // Object to store intervals for multiple tabs
+let countdownTimers = {};   // Object to store the countdown values for each tab
 const options = {
     day: '2-digit', // e.g., "21"
     month: '2-digit', // e.g., "09"
@@ -8,6 +9,34 @@ const options = {
     second: '2-digit', // e.g., "38"
   };
 
+function updateBadge(tabId, secondsLeft) {
+    // Update the badge text to show the countdown (seconds left until refresh)
+    chrome.action.setBadgeText({ text: secondsLeft.toString(), tabId: tabId });
+}  
+
+function startCountdown(tabId, interval) {
+    let secondsLeft = interval / 1000;  // Convert milliseconds to seconds
+
+    // Clear any existing countdown for this tab
+    clearInterval(countdownTimers[tabId]);
+
+    // Create a new countdown timer
+    countdownTimers[tabId] = setInterval(() => {
+        // Decrement the countdown
+        secondsLeft--;
+
+        // Update the badge text with the remaining seconds
+        updateBadge(tabId, secondsLeft);
+
+        // When the countdown reaches 0, reset the countdown
+        if (secondsLeft <= 0) {
+            var date = new Date(Date.now());
+            console.log(`${date.toLocaleString('en-US', options)}: Resetting timer for tab with ID: ${tabId}`);
+            secondsLeft = interval / 1000;
+        }
+    }, 1000);  // Update every second
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "start") {
         const interval = message.interval;
@@ -16,7 +45,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // Check if the tab is already being refreshed, clear the existing interval if so
         if (refreshIntervals[tabId]) {
             clearInterval(refreshIntervals[tabId]);
-            var date = new Date(Date.now())
+            clearInterval(countdownTimers[tabId]);
+            var date = new Date(Date.now());
             console.log(`${date.toLocaleString('en-US', options)}: Cleared existing refresh interval for tab ID: ${tabId}`);
         }
 
@@ -27,12 +57,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 return;
             }
 
-            var date = new Date(Date.now())
+            var date = new Date(Date.now());
             console.log(`${date.toLocaleString('en-US', options)}: Started auto-refresh on tab every ${interval/1000} seconds with ID: ${tabId} URL: ${tab.url}`);
 
             // Start refreshing the tab at the specified interval
             refreshIntervals[tabId] = setInterval(() => {
-                var date = new Date(Date.now())
+                var date = new Date(Date.now());
                 console.log(`${date.toLocaleString('en-US', options)}: Refreshing tab with ID: ${tabId} (URL: ${tab.url})`);
                 chrome.tabs.reload(tabId, () => {
                     if (chrome.runtime.lastError) {
@@ -40,7 +70,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     }
                 });
             }, interval);
-            date = new Date(Date.now())
+
+            startCountdown(tabId, interval);
+
+            date = new Date(Date.now());
             console.log(`${date.toLocaleString('en-US', options)}: no. of tabs being refreshed: ${Object.keys(refreshIntervals).length}`);
         });
 
@@ -50,10 +83,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // Stop refreshing the specified tab
         if (refreshIntervals[tabId]) {
             clearInterval(refreshIntervals[tabId]);
+            clearInterval(countdownTimers[tabId]);
             delete refreshIntervals[tabId];
-            var date = new Date(Date.now())
+            delete(countdownTimers[tabId]);
+            var date = new Date(Date.now());
             console.log(`${date.toLocaleString('en-US', options)}: Stopped auto-refresh for tab with ID: ${tabId}`);
             console.log(`${date.toLocaleString('en-US', options)}: no. of tabs still being refreshed: ${Object.keys(refreshIntervals).length}`);
+            console.log(`${date.toLocaleString('en-US', options)}: no. of timers: ${Object.keys(countdownTimers).length}`);
         } else {
             console.log(`No active refresh found for tab with ID: ${tabId}`);
         }
@@ -63,9 +99,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.tabs.onRemoved.addListener(function (tabId) {
     if (refreshIntervals[tabId]) {
         clearInterval(refreshIntervals[tabId]);
+        clearInterval(countdownTimers[tabId]);
         delete refreshIntervals[tabId];
-        var date = new Date(Date.now())
+        delete(countdownTimers[tabId]);
+        var date = new Date(Date.now());
         console.log(`${date.toLocaleString('en-US', options)}: Stopped auto-refresh for tab with ID: ${tabId}`);
         console.log(`${date.toLocaleString('en-US', options)}: no. of tabs still being refreshed: ${Object.keys(refreshIntervals).length}`);
+        console.log(`${date.toLocaleString('en-US', options)}: no. of timers: ${Object.keys(countdownTimers).length}`);
     }
 })
