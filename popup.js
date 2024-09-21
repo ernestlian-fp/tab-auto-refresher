@@ -3,13 +3,19 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const tabId = tabs[0].id;
 
+        chrome.storage.local.get([tabId.toString()], (result) => {
+            if (result && result[tabId]) {
+                document.getElementById('interval').value = result[tabId].interval;
+            }
+        });
+
         // Send a message to the background script to get the interval for the current tab
         chrome.runtime.sendMessage({ action: "getInterval", tabId: tabId }, (response) => {
             if (response && response.interval) {
                 // Convert the interval from milliseconds to seconds and display it
-                document.getElementById('current-interval').innerText = `Current interval: ${response.interval / 1000} seconds`;
+                document.getElementById('current-interval').innerText = `Current interval: ${response.interval / 1000}s`;
             } else {
-                document.getElementById('current-interval').innerText = 'No interval set for this tab.';
+                document.getElementById('current-interval').innerText = 'Current interval: 0s';
             }
         });
     });
@@ -25,7 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tabId = tabs[0].id;
             chrome.runtime.sendMessage({ action: "start", interval: interval, tabId: tabId }, () => {
-                document.getElementById('current-interval').innerText = `Current interval: ${interval / 1000} seconds`;
+                document.getElementById('current-interval').innerText = `Current interval: ${interval / 1000} s`;
+            });
+            chrome.storage.local.set({
+                [tabId.toString()]: {
+                    interval: interval / 1000
+                }
             });
         });
     });
@@ -35,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tabId = tabs[0].id;
             chrome.runtime.sendMessage({ action: "stop", tabId: tabId }, () => {
-                document.getElementById('current-interval').innerText = 'No interval set for this tab.';
+                document.getElementById('current-interval').innerText = 'Current interval: 0s';
             });
         });
     });

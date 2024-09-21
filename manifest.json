@@ -4,7 +4,8 @@
     "version": "1.0",
     "description": "Refresh tabs.",
     "permissions": [
-      "tabs"
+      "tabs",
+      "storage"
     ],
     "background": {
       "service_worker": "background.js"
@@ -13,7 +14,9 @@
       "default_popup": "popup.html"
     },
     "icons": {
-      "16": "icon16.png"
+      "16": "icon16.png",
+      "48": "icon16.png",
+      "128": "icon16.png"
     }
   }
   

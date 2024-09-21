@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-    body { font-family: Arial, sans-serif; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+  <title>Auto Refresh</title>
 </head>
 <body>
-  <h3>Auto Refresh</h3>
-  <input type="number" id="interval" placeholder="Seconds" min="1" />
-  <button id="start">Start</button>
-  <button id="stop">Stop</button>
-  <div id="current-interval"></div>
+  <div class="popup">
+    <h3 id="name">Auto Refresh</h3>
+    <input type="number" id="interval" placeholder="Seconds" min="1" />
+    <div id="button-container">
+      <button id="start">Start</button>
+      <button id="stop">Stop</button>
+    </div>
+    <div id="current-interval"></div>
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>
