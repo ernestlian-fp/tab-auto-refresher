@@ -16,5 +16,3 @@ How to use:
 5) click start
 6) click stop when you don't want to refresh tab anymore, closing tab works as well
 7) repeat for other tabs you want to refresh concurrently
-
-update FORK
