@@ -3,7 +3,9 @@
     "name": "Ernie's Auto-Refresher",
     "version": "1.0",
     "description": "Refresh tabs.",
-    "permissions": ["tabs", "activeTab"],
+    "permissions": [
+      "tabs"
+    ],
     "background": {
       "service_worker": "background.js"
     },

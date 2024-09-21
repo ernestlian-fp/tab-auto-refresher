@@ -1,5 +1,6 @@
 let refreshIntervals = {}; // Object to store intervals for multiple tabs
 let countdownTimers = {};   // Object to store the countdown values for each tab
+let storedIntervals = {};   // Object to store the intervals (in milliseconds) for each tab
 const options = {
     day: '2-digit', // e.g., "21"
     month: '2-digit', // e.g., "09"
@@ -73,6 +74,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
             startCountdown(tabId, interval);
 
+            storedIntervals[tabId] = interval;
+
             date = new Date(Date.now());
             console.log(`${date.toLocaleString('en-US', options)}: no. of tabs being refreshed: ${Object.keys(refreshIntervals).length}`);
         });
@@ -85,7 +88,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             clearInterval(refreshIntervals[tabId]);
             clearInterval(countdownTimers[tabId]);
             delete refreshIntervals[tabId];
-            delete(countdownTimers[tabId]);
+            delete countdownTimers[tabId];
+            delete storedIntervals[tabId];
             var date = new Date(Date.now());
             console.log(`${date.toLocaleString('en-US', options)}: Stopped auto-refresh for tab with ID: ${tabId}`);
             console.log(`${date.toLocaleString('en-US', options)}: no. of tabs still being refreshed: ${Object.keys(refreshIntervals).length}`);
@@ -93,7 +97,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         } else {
             console.log(`No active refresh found for tab with ID: ${tabId}`);
         }
+    } else if (message.action === "getInterval") {
+        const tabId = message.tabId;
+        if (refreshIntervals[tabId]) {
+            sendResponse({ interval: storedIntervals[tabId] });
+        } else {
+            sendResponse({ interval: null });
+        }
+        return true;
     }
+
+    return false;
 });
 
 chrome.tabs.onRemoved.addListener(function (tabId) {
@@ -102,6 +116,7 @@ chrome.tabs.onRemoved.addListener(function (tabId) {
         clearInterval(countdownTimers[tabId]);
         delete refreshIntervals[tabId];
         delete(countdownTimers[tabId]);
+        delete storedIntervals[tabId];
         var date = new Date(Date.now());
         console.log(`${date.toLocaleString('en-US', options)}: Stopped auto-refresh for tab with ID: ${tabId}`);
         console.log(`${date.toLocaleString('en-US', options)}: no. of tabs still being refreshed: ${Object.keys(refreshIntervals).length}`);
