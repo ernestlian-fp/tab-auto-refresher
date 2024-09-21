@@ -2,6 +2,8 @@ Chrome Tab Auto Refresher Extension
 -
 This extension allows user to refresh multiple tabs, even those in another window, each with their own interval
 
+![alt text](image-1.png)
+
 How to use:
 
 1) clone repo
