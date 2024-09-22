@@ -12,7 +12,11 @@ const options = {
 
 function updateBadge(tabId, secondsLeft) {
     // Update the badge text to show the countdown (seconds left until refresh)
-    chrome.action.setBadgeText({ text: secondsLeft.toString(), tabId: tabId });
+    if (secondsLeft !== null) {
+        chrome.action.setBadgeText({ text: secondsLeft.toString(), tabId: tabId });
+    } else {
+        chrome.action.setBadgeText({ text: null, tabId: tabId });
+    }
 }  
 
 function startCountdown(tabId, interval) {
@@ -36,6 +40,10 @@ function startCountdown(tabId, interval) {
             secondsLeft = interval / 1000;
         }
     }, 1000);  // Update every second
+}
+
+function stopCountdown(tabId) {
+    updateBadge(tabId, null);
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -85,15 +93,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         // Stop refreshing the specified tab
         if (refreshIntervals[tabId]) {
-            clearInterval(refreshIntervals[tabId]);
-            clearInterval(countdownTimers[tabId]);
-            delete refreshIntervals[tabId];
-            delete countdownTimers[tabId];
-            delete storedIntervals[tabId];
-            var date = new Date(Date.now());
-            console.log(`${date.toLocaleString('en-US', options)}: Stopped auto-refresh for tab with ID: ${tabId}`);
-            console.log(`${date.toLocaleString('en-US', options)}: no. of tabs still being refreshed: ${Object.keys(refreshIntervals).length}`);
-            console.log(`${date.toLocaleString('en-US', options)}: no. of timers: ${Object.keys(countdownTimers).length}`);
+            stopRefresh(tabId);
+            stopCountdown(tabId);
         } else {
             console.log(`No active refresh found for tab with ID: ${tabId}`);
         }
@@ -112,14 +113,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.tabs.onRemoved.addListener(function (tabId) {
     if (refreshIntervals[tabId]) {
-        clearInterval(refreshIntervals[tabId]);
-        clearInterval(countdownTimers[tabId]);
-        delete refreshIntervals[tabId];
-        delete(countdownTimers[tabId]);
-        delete storedIntervals[tabId];
-        var date = new Date(Date.now());
-        console.log(`${date.toLocaleString('en-US', options)}: Stopped auto-refresh for tab with ID: ${tabId}`);
-        console.log(`${date.toLocaleString('en-US', options)}: no. of tabs still being refreshed: ${Object.keys(refreshIntervals).length}`);
-        console.log(`${date.toLocaleString('en-US', options)}: no. of timers: ${Object.keys(countdownTimers).length}`);
+        stopRefresh(tabId);
     }
 })
+
+function stopRefresh(tabID) {
+    clearInterval(refreshIntervals[tabID]);
+    clearInterval(countdownTimers[tabID]);
+    delete refreshIntervals[tabID];
+    delete countdownTimers[tabID];
+    delete storedIntervals[tabID];
+    var date = new Date(Date.now());
+    console.log(`${date.toLocaleString('en-US', options)}: Stopped auto-refresh for tab with ID: ${tabID}`);
+    console.log(`${date.toLocaleString('en-US', options)}: no. of tabs still being refreshed: ${Object.keys(refreshIntervals).length}`);
+    console.log(`${date.toLocaleString('en-US', options)}: no. of timers: ${Object.keys(countdownTimers).length}`);    
+}
