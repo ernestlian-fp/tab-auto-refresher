@@ -1,12 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const intervalInput = document.getElementById('interval');
+
+
     // Query the active tab when the popup is opened
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const tabId = tabs[0].id;
 
         chrome.storage.local.get([tabId.toString()], (result) => {
             if (result && result[tabId]) {
-                document.getElementById('interval').value = result[tabId].interval;
+                intervalInput.value = result[tabId].interval;
             }
+            intervalInput.select()
         });
 
         // Send a message to the background script to get the interval for the current tab
@@ -22,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for the start button
     document.getElementById('start').addEventListener('click', () => {
-        const interval = parseInt(document.getElementById('interval').value) * 1000;
+        const interval = parseInt(intervalInput.value) * 1000;
         if (isNaN(interval) || interval < 1000) {
             alert('Please enter a valid number of seconds.');
             return;
