@@ -54,4 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
+
+    // Event listener for Enter key to start countdown
+    intervalInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            document.getElementById('start').click();
+        }
+    });
 });
